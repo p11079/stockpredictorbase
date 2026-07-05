@@ -1,16 +1,14 @@
 # StockPredictorBase
 
-StockPredictorBase is a machine learning-based stock prediction project focused on analyzing historical market data and generating future price predictions.
+StockPredictorBase is a machine learning stock prediction project that analyzes historical market data, engineers technical features, and produces next-day forecasts.
 
-## Overview
+## What It Does
 
-The project uses financial datasets and predictive models to:
-
-- Fetch and process stock market data
-- Perform data cleaning and preprocessing
-- Train prediction models
-- Visualize trends and predictions
-- Evaluate model performance
+- Fetches historical stock price data from Yahoo Finance
+- Cleans and enriches the dataset with technical indicators
+- Trains a Random Forest regression model
+- Compares model output against a naive last-value baseline
+- Visualizes training, testing, predictions, and residuals
 
 ## Tech Stack
 
@@ -19,50 +17,26 @@ The project uses financial datasets and predictive models to:
 - NumPy
 - Scikit-learn
 - Matplotlib
-- yFinance
-- Jupyter Notebook
+- Seaborn
+- yfinance
+- Streamlit
 
 ## Project Structure
 
 ```bash
 stockpredictorbase/
-│
-├── data/               # Dataset files
-├── models/             # Saved ML models
-├── notebooks/          # Experiment notebooks
-├── src/                # Source code
-├── requirements.txt    # Project dependencies
-└── README.md
+├── app.py              # Streamlit dashboard
+├── main.py             # CLI pipeline
+├── data_cleaner.py     # Feature engineering and scaling
+├── evaluator.py        # Metrics and plots
+├── stock_fetcher.py    # Yahoo Finance data loading
+├── stock_model.py      # Model training and prediction
+├── stock_vizualizer.py # Plot helpers
+├── utils.py            # Validation and persistence helpers
+└── requirements.txt    # Project dependencies
 ```
 
-## Setup
-
-Clone the repository:
-
-```bash
-git clone https://github.com/p11079/stockpredictorbase.git
-cd stockpredictorbase
-```
-
-Create a virtual environment:
-
-```bash
-python -m venv venv
-```
-
-Activate the environment:
-
-Windows:
-
-```bash
-venv\Scripts\activate
-```
-
-Linux/macOS:
-
-```bash
-source venv/bin/activate
-```
+## Run the App
 
 Install dependencies:
 
@@ -70,35 +44,39 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-## Run the Project
+Start the Streamlit dashboard:
+
+```bash
+streamlit run app.py
+```
+
+Or run the CLI pipeline:
 
 ```bash
 python main.py
 ```
 
-Or open the notebooks:
+## Notes
 
-```bash
-jupyter notebook
-```
+- The model uses historical data only. It is not a live trading signal.
+- Forecast quality depends on the ticker, date range, and amount of available history.
+- Short date ranges may produce weak or unstable results.
 
 ## Features
 
-- Historical stock data analysis
-- Data visualization
-- ML-based prediction pipeline
+- Historical stock analysis
+- Technical feature engineering
 - Model training and evaluation
-- Modular project structure
+- Baseline comparison
+- Plotting for price, split, prediction, and residual views
 
 ## Future Improvements
 
-- Add deep learning models
-- Real-time stock tracking
-- Dashboard integration
-- Deployment support
-- Multi-stock comparison
+- Add walk-forward backtesting
+- Persist forecast history
+- Add richer model diagnostics
+- Support multiple models and feature sets
 
 ## License
 
 This project is for educational and development purposes.
-
