@@ -6,9 +6,10 @@ Run this script: python main.py
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 # Import from project modules
-from stock_fetcher import fetch_stock_data
+from stock_fetcher import fetch_stock_data, normalize_ticker
 from data_cleaner import clean_and_prepare, scale_features
 from stock_model import train_and_predict, predict_future
 from evaluator import evaluate_regression, directional_accuracy
@@ -20,15 +21,18 @@ from stock_vizualizer import (
 )
 from utils import validate_date, get_today_date, add_business_days
 
+OUTPUT_DIR = Path("outputs")
+
 # =============================================================================
 # 1. User Input
 # =============================================================================
 def get_user_input():
     """Prompt user for ticker and date range."""
     ticker = input("Enter stock ticker symbol (e.g., AAPL, TSLA): ").upper().strip()
+    exchange = input("Enter exchange code (US, NSE, BSE, JSE, LSE, ASX, HKEX, TSE, SGX, FRA, EURONEXT): ").upper().strip() or "US"
     start_date = input("Enter start date (YYYY-MM-DD): ").strip()
     end_date = input("Enter end date (YYYY-MM-DD): ").strip()
-    return ticker, start_date, end_date
+    return ticker, exchange, start_date, end_date
 
 
 # =============================================================================
@@ -40,19 +44,20 @@ def main():
     print("=" * 60)
 
     # --- Get and validate inputs ---
-    ticker, start_str, end_str = get_user_input()
+    ticker, exchange, start_str, end_str = get_user_input()
     try:
         start_dt = validate_date(start_str)
         end_dt = validate_date(end_str)
         if start_dt >= end_dt:
             raise ValueError("Start date must be before end date.")
+        normalized_ticker = normalize_ticker(ticker, exchange=exchange)
     except ValueError as e:
         print(f"Date error: {e}")
         return
 
     # --- Fetch data ---
-    print(f"\nFetching data for {ticker} from {start_str} to {end_str}...")
-    raw_df = fetch_stock_data(ticker, start_str, end_str)
+    print(f"\nFetching data for {normalized_ticker} from {start_str} to {end_str}...")
+    raw_df = fetch_stock_data(ticker, start_str, end_str, exchange=exchange)
     if raw_df is None:
         print("Exiting due to data fetch error.")
         return
@@ -66,6 +71,9 @@ def main():
     print("\nCleaning data and generating features...")
     df = clean_and_prepare(raw_df.copy())
     print(f"Data after feature engineering: {df.shape}")
+    if df.empty:
+        print("Not enough rows remain after feature engineering. Try a longer date range.")
+        return
 
     # Define feature columns (must match those created in clean_and_prepare)
     feature_columns = [
@@ -80,6 +88,10 @@ def main():
     if missing:
         print(f"Warning: Missing feature columns {missing}. Removing them.")
         feature_columns = [col for col in feature_columns if col in df.columns]
+
+    if len(feature_columns) < 3:
+        print("Not enough usable feature columns were created. Try a longer date range.")
+        return
 
     target_column = 'Target'
 
@@ -109,7 +121,7 @@ def main():
     print(f"Directional Accuracy: {dir_acc:.2f}%")
 
     # --- Future Prediction (Next Business Day) ---
-    latest_features = scaled_df[feature_columns].iloc[-1:].values  # shape (1, n_features)
+    latest_features = scaled_df[feature_columns].iloc[-1:]  # keep feature names for sklearn
     next_day_pred = predict_future(model, latest_features)
 
     # Calculate next business day from last date in data
@@ -119,19 +131,20 @@ def main():
 
     # --- Visualisations ---
     print("\nGenerating plots... (close each figure to continue)")
+    OUTPUT_DIR.mkdir(exist_ok=True)
     # 1. Closing price history
-    plot_closing_price(df, title=f"{ticker} Closing Price")
+    plot_closing_price(df, title=f"{normalized_ticker} Closing Price", save_path=OUTPUT_DIR / "closing_price.png")
 
     # 2. Train/Test split overlay
-    plot_train_test_split(train_df, test_df, title=f"{ticker} Train-Test Split")
+    plot_train_test_split(train_df, test_df, title=f"{normalized_ticker} Train-Test Split", save_path=OUTPUT_DIR / "train_test_split.png")
 
     # 3. Actual vs Predicted (test set)
-    plot_actual_vs_predicted(actuals, predictions, title=f"{ticker} – Actual vs Predicted")
+    plot_actual_vs_predicted(actuals, predictions, title=f"{normalized_ticker} Actual vs Predicted", save_path=OUTPUT_DIR / "actual_vs_predicted.png")
 
     # 4. Residual distribution
-    plot_residuals(actuals, predictions, title=f"{ticker} – Residuals")
+    plot_residuals(actuals, predictions, title=f"{normalized_ticker} Residuals", save_path=OUTPUT_DIR / "residuals.png")
 
-    print("\nPipeline completed successfully.")
+    print(f"\nPipeline completed successfully. Plots saved in {OUTPUT_DIR.resolve()}.")
 
 
 if __name__ == "__main__":

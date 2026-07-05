@@ -1,104 +1,121 @@
 # StockPredictorBase
 
-StockPredictorBase is a machine learning-based stock prediction project focused on analyzing historical market data and generating future price predictions.
+StockPredictorBase predicts the next close price for a stock using historical OHLCV data, engineered technical indicators, and a Random Forest model.
 
-## Overview
+## What Changed
 
-The project uses financial datasets and predictive models to:
+- Added a Streamlit dashboard for interactive forecasting.
+- Added exchange-aware ticker handling for major markets.
+- Added ticker search suggestions based on the selected exchange.
+- Hardened the CLI flow so short datasets and invalid tickers fail safely.
+- Saved generated plots into `outputs/`.
 
-- Fetch and process stock market data
-- Perform data cleaning and preprocessing
-- Train prediction models
-- Visualize trends and predictions
-- Evaluate model performance
+## Where You Can Run It
 
-## Tech Stack
+You can run this project locally on Windows, macOS, or Linux as long as you have Python 3.10+ installed and internet access for Yahoo Finance data.
 
-- Python
-- Pandas
-- NumPy
-- Scikit-learn
-- Matplotlib
-- yFinance
-- Jupyter Notebook
+## Step-by-Step Guide
 
-## Project Structure
+### 1. Open the project folder
 
-```bash
-stockpredictorbase/
-│
-├── data/               # Dataset files
-├── models/             # Saved ML models
-├── notebooks/          # Experiment notebooks
-├── src/                # Source code
-├── requirements.txt    # Project dependencies
-└── README.md
-```
+Open a terminal in the repository root.
 
-## Setup
-
-Clone the repository:
-
-```bash
-git clone https://github.com/p11079/stockpredictorbase.git
-cd stockpredictorbase
-```
-
-Create a virtual environment:
-
-```bash
-python -m venv venv
-```
-
-Activate the environment:
+### 2. Create and activate a virtual environment
 
 Windows:
 
 ```bash
+python -m venv venv
 venv\Scripts\activate
 ```
 
-Linux/macOS:
+macOS / Linux:
 
 ```bash
+python -m venv venv
 source venv/bin/activate
 ```
 
-Install dependencies:
+### 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Run the Project
+### 4. Run the Streamlit app
+
+```bash
+streamlit run streamlit_app.py
+```
+
+### 5. Or run the CLI version
 
 ```bash
 python main.py
 ```
 
-Or open the notebooks:
+### 6. Enter inputs
+
+For the CLI, provide:
+
+- ticker symbol, such as `AAPL`, `RELIANCE`, `0700`, or `7203`
+- exchange code, such as `US`, `NSE`, `BSE`, `JSE`, `LSE`, `ASX`, `HKEX`, `TSE`, `SGX`, `FRA`, or `EURONEXT`
+- start date in `YYYY-MM-DD`
+- end date in `YYYY-MM-DD`
+
+For the Streamlit app, pick:
+
+- a region preset
+- an exchange
+- a ticker symbol
+- a date range
+
+## Example Tickers
+
+- `US`: `AAPL`, `MSFT`, `TSLA`
+- `NSE`: `RELIANCE`, `TCS`, `INFY`, `SBIN`
+- `BSE`: `RELIANCE`, `HDFCBANK`, `TCS`
+- `JSE`: `NPN`, `SBK`
+- `LSE`: `VOD`, `HSBA`, `BP`
+- `ASX`: `BHP`, `CBA`, `CSL`
+- `HKEX`: `0700`, `9988`
+- `TSE`: `7203`, `6758`
+- `SGX`: `D05`, `C09`
+- `FRA`: `SIE`, `AIR`
+- `EURONEXT`: `AIR`, `MC`
+
+## What the App Outputs
+
+- test metrics
+  - RMSE
+  - MAE
+  - MAPE
+  - directional accuracy
+- next-business-day predicted close
+- plot images saved into `outputs/`
+
+## Notes
+
+- The model uses historical data only. It is not a live trading signal.
+- Some exchange tickers require exact Yahoo Finance symbols.
+- Very short date ranges can collapse after feature engineering, in which case the app will ask for a longer window.
+
+## Project Structure
 
 ```bash
-jupyter notebook
+stockpredictorbase/
+├── streamlit_app.py
+├── main.py
+├── stock_fetcher.py
+├── data_cleaner.py
+├── stock_model.py
+├── evaluator.py
+├── stock_vizualizer.py
+├── utils.py
+├── requirements.txt
+└── CHANGELOG.md
 ```
-
-## Features
-
-- Historical stock data analysis
-- Data visualization
-- ML-based prediction pipeline
-- Model training and evaluation
-- Modular project structure
-
-## Future Improvements
-
-- Add deep learning models
-- Real-time stock tracking
-- Dashboard integration
-- Deployment support
-- Multi-stock comparison
 
 ## License
 
 This project is for educational and development purposes.
-

@@ -22,7 +22,11 @@ def train_and_predict(df, feature_columns, target_column):
 
 def predict_future(model, latest_features):
     """Predicts next day value using latest features."""
-    return model.predict(latest_features)[0]
+    if isinstance(latest_features, pd.DataFrame):
+        features = latest_features
+    else:
+        features = pd.DataFrame(latest_features)
+    return model.predict(features)[0]
 
 
 if __name__ == "__main__":

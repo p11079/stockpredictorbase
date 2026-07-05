@@ -2,18 +2,20 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import numpy as np
+from pathlib import Path
 
 # Set seaborn style for better aesthetics
 sns.set_theme(style="whitegrid")
+plt.ioff()
 
 
 def _handle_save_or_show(save_path):
     """Helper function to save or display the plot."""
     if save_path:
+        save_path = Path(save_path)
+        save_path.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(save_path, bbox_inches='tight')
         print(f"Plot saved to: {save_path}")
-    else:
-        plt.show()
     plt.close()
 
 

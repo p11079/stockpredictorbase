@@ -6,6 +6,8 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 def evaluate_regression(y_true, y_pred):
     """Calculates and prints RMSE, MAE, and MAPE."""
     y_true, y_pred = np.array(y_true), np.array(y_pred)
+    if y_true.size == 0 or y_pred.size == 0:
+        raise ValueError("Cannot evaluate empty prediction arrays.")
 
     rmse = np.sqrt(mean_squared_error(y_true, y_pred))
     mae = mean_absolute_error(y_true, y_pred)
@@ -24,6 +26,8 @@ def evaluate_regression(y_true, y_pred):
 def directional_accuracy(y_true, y_pred):
     """Calculates the % of matching up/down directions."""
     y_true, y_pred = np.array(y_true), np.array(y_pred)
+    if len(y_true) < 2 or len(y_pred) < 2:
+        return float("nan")
 
     # Compare direction of change from the previous actual step
     actual_direction = np.sign(np.diff(y_true))
