@@ -4,14 +4,15 @@ from __future__ import annotations
 
 from datetime import date
 
+import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 import streamlit as st
 
 from data_cleaner import clean_and_prepare, scale_features
-from evaluator import directional_accuracy, evaluate_regression, plot_actual_vs_predicted, plot_residuals
+from evaluator import directional_accuracy, evaluate_regression
 from stock_fetcher import fetch_stock_data
 from stock_model import predict_future, train_and_predict
-from stock_vizualizer import plot_closing_price, plot_train_test_split
 from utils import add_business_days
 
 FEATURE_COLUMNS = [
@@ -31,6 +32,7 @@ FEATURE_COLUMNS = [
 ]
 TARGET_COLUMN = "Target"
 
+sns.set_theme(style="whitegrid")
 st.set_page_config(page_title="StockPredictorBase", page_icon="\U0001F4C8", layout="wide")
 
 st.markdown(
@@ -59,6 +61,53 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+
+def _plot_price_history(df: pd.DataFrame, ticker: str):
+    fig, ax = plt.subplots(figsize=(12, 5))
+    ax.plot(df.index, df["Close"], color="#2563eb", linewidth=2)
+    ax.set_title(f"{ticker} closing price")
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Price")
+    fig.tight_layout()
+    return fig
+
+
+def _plot_split(train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: str):
+    fig, ax = plt.subplots(figsize=(12, 5))
+    ax.plot(train_df.index, train_df["Close"], color="#2563eb", label="Train", linewidth=2)
+    ax.plot(test_df.index, test_df["Close"], color="#f97316", label="Test", linewidth=2)
+    ax.set_title(f"{ticker} train/test split")
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Price")
+    ax.legend()
+    fig.tight_layout()
+    return fig
+
+
+def _plot_actual_vs_predicted(actuals, predictions, ticker: str):
+    fig, ax = plt.subplots(figsize=(12, 5))
+    ax.plot(actuals, label="Actual", color="#2563eb", linewidth=2)
+    ax.plot(predictions, label="Predicted", color="#f97316", linestyle="--", linewidth=2)
+    ax.set_title(f"{ticker} actual vs predicted")
+    ax.set_xlabel("Time step")
+    ax.set_ylabel("Value")
+    ax.legend()
+    fig.tight_layout()
+    return fig
+
+
+def _plot_residuals(actuals, predictions, ticker: str):
+    residuals = pd.Series(actuals) - pd.Series(predictions)
+    fig, ax = plt.subplots(figsize=(10, 5))
+    sns.histplot(residuals, bins=30, kde=True, color="#dc2626", ax=ax)
+    ax.axvline(0, color="black", linestyle="--", linewidth=1)
+    ax.set_title(f"{ticker} residuals")
+    ax.set_xlabel("Error (Actual - Predicted)")
+    ax.set_ylabel("Frequency")
+    fig.tight_layout()
+    return fig
+
 
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -124,16 +173,9 @@ if run_button:
     train_df = df.iloc[:split_idx]
     test_df = df.iloc[split_idx:]
 
-    plot_closing_price(df, title=f"{ticker} closing price")
-    st.pyplot(st.pyplot())
-
-    plot_train_test_split(train_df, test_df, title=f"{ticker} train/test split")
-    st.pyplot(st.pyplot())
-
-    plot_actual_vs_predicted(actuals, predictions, title=f"{ticker} actual vs predicted")
-    st.pyplot(st.pyplot())
-
-    plot_residuals(actuals, predictions, title=f"{ticker} residuals")
-    st.pyplot(st.pyplot())
+    st.pyplot(_plot_price_history(df, ticker), clear_figure=True)
+    st.pyplot(_plot_split(train_df, test_df, ticker), clear_figure=True)
+    st.pyplot(_plot_actual_vs_predicted(actuals, predictions, ticker), clear_figure=True)
+    st.pyplot(_plot_residuals(actuals, predictions, ticker), clear_figure=True)
 else:
     st.info("Choose a ticker and date range, then run the forecast.")
