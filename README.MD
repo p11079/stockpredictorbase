@@ -61,6 +61,7 @@ python main.py
 - The model uses historical data only. It is not a live trading signal.
 - Forecast quality depends on the ticker, date range, and amount of available history.
 - Short date ranges may produce weak or unstable results.
+- The Streamlit dashboard shows the forecast, error metrics, and plots in a single screen.
 
 ## Features
 
